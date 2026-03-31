@@ -28,7 +28,7 @@ except:
 print("Please enter the date for which you want to add contents:\n1: for Today, 0 for Yesterday. Else, write a custom date of your choise in format: DD/MM or D/M. Add year if necessary")
 
 while True:
-    user_inp = input()
+    user_inp = input("Your input?: ")
     if user_inp == '1':
         input_date = datetime.date.today()
         break
@@ -117,7 +117,7 @@ target_dir_obj = Path(target_dir)
 target_dir_obj.parent.mkdir(parents=True, exist_ok=True)
 
 # Pushing the newly created file here.
-with open(target_dir+'/'+input_date_formated, 'w', encoding='utf-8') as f1:
+with open(target_dir_actual+'/'+input_date_formated, 'w', encoding='utf-8') as f1:
     f1.write(content)
 
 
@@ -128,7 +128,7 @@ with open(target_dir+'/'+input_date_formated, 'w', encoding='utf-8') as f1:
 if 'password' in globals():
     print("Hey, I have your previously used password, would you like to go ahead with the same or change it?:")  # In case of password already present (from 2nd run), we would ask user to continue or to change it.
     while True:
-        user_inp = input("Type 'C' to change or 'N' to continue")
+        user_inp = input("Type 'C' to change or 'N' to continue: ")
         if user_inp.lower() == 'c':
             password = input("Enter a suitable, strong password for your export zip file: ")
             break
@@ -198,13 +198,13 @@ def call_google():
 # Asking user if he/she wants to use Google API to upload this zip to cloud now?. Or exit the program.
 while True:
     print("Do you want to backup the diary on cloud?:")
-    c_backup = input("Y/n")
+    c_backup = input("Y/n: ")
     if c_backup.lower() == 'y':
         call_google()  # If yes, it would connect to the google drive API
+        print("Got it!\n have a great day ahead!")
         break
     elif c_backup.lower() == 'n':
         print("Got it!\n have a great day ahead!")
         break
     else:
         print("Invalid response, Please try again..")
-
