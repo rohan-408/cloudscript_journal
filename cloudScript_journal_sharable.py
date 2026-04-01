@@ -170,19 +170,23 @@ with pyzipper.AESZipFile(Path(target_dir)/zip_file_name, 'w',compression=pyzippe
 scopes = ['https://www.googleapis.com/auth/drive.file']
 file_name = zip_file_name
 file_path = target_dir+'/'+zip_file_name
-gdrive_folder_id = 'your google drive folder_id'  # change this with your target folder id of your google drive. 
+gdrive_folder_id = 'google drive folder_id'  # change this with your target folder id of your google drive. 
 ## (from the newly created folder URL, folder id is the thing after /folders/)
 
+base_dir = os.path.dirname(os.path.abspath(__file__))
 def get_service():
     creds = None
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', scopes)
+    token_path = os.path.join(base_dir, 'token.json')
+    creds_path = os.path.join(base_dir, 'credentials.json')
+
+    if os.path.exists(token_path):
+        creds = Credentials.from_authorized_user_file(token_path, scopes)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            creds = InstalledAppFlow.from_client_secrets_file('credentials.json', scopes).run_local_server(port=0)
-        with open('token.json', 'w') as f:
+            creds = InstalledAppFlow.from_client_secrets_file(creds_path, scopes).run_local_server(port=0)
+        with open(token_path, 'w') as f:
             f.write(creds.to_json())
     return build('drive', 'v3', credentials=creds)
 
