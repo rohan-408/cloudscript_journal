@@ -122,20 +122,28 @@ with open(target_dir_actual+'/'+input_date_formated, 'w', encoding='utf-8') as f
 
 
 # Now creating a .zip protected file to be pushed to Google drive
-## Taking password from the saved pickle file (from 2nd run)
-## We would save this file in target_dir
+## Checking if we already have password from previous saved pickle.
+## If not, we have to ask user to set one.
+## If yes, even then we have to ask if the user wants to continue or to change it.
 
-if 'password' in globals():
-    print("Hey, I have your previously used password, would you like to go ahead with the same or change it?:")  # In case of password already present (from 2nd run), we would ask user to continue or to change it.
+def ask_pass(response):
     while True:
-        user_inp = input("Type 'C' to change or 'N' to continue: ")
-        if user_inp.lower() == 'c':
-            password = input("Enter a suitable, strong password for your export zip file: ")
-            break
-        elif user_inp.lower() == 'n':
-            break
-        else:
-            print("Invalid response. Please try again.")
+            if response.lower() == 'c':
+                password = input("Enter a suitable, strong password for your export zip file: ")
+                break
+            elif response.lower() == 'n':
+                break
+            else:
+                print("Invalid response. Please try again.")
+    return password
+
+if 'password' in globals():  # If we have password saved.
+    print("Hey, I have your previously used password, would you like to go ahead with the same or change it?:")  # In case of password already present (from 2nd run), we would ask user to continue or to change it.
+    user_inp = input("Type 'C' to change or 'N' to continue: ")    
+    password = ask_pass(user_inp)
+else:  # in case its the first time user is running the code, no pre-existing password defined.
+    print("You need to setup a password for encrypting the export file.")
+    password = ask_pass('c')
 
 print("Zipping & encoding your export.")
 passbytes = password.encode('utf-8')
@@ -161,7 +169,7 @@ with pyzipper.AESZipFile(Path(target_dir)/zip_file_name, 'w',compression=pyzippe
 scopes = ['https://www.googleapis.com/auth/drive.file']
 file_name = zip_file_name
 file_path = target_dir+'/'+zip_file_name
-gdrive_folder_id = 'google_drive_folder_id'  # change this with your target folder id of your google drive. 
+gdrive_folder_id = 'your google drive folder_id'  # change this with your target folder id of your google drive. 
 ## (from the newly created folder URL, folder id is the thing after /folders/)
 
 def get_service():
@@ -204,7 +212,7 @@ while True:
         print("Got it!\n have a great day ahead!")
         break
     elif c_backup.lower() == 'n':
-        print("Got it!\n have a great day ahead!")
+        print("Got it!\nhave a great day ahead!")
         break
     else:
         print("Invalid response, Please try again..")
