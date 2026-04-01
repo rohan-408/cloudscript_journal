@@ -131,16 +131,17 @@ def ask_pass(response):
             if response.lower() == 'c':
                 password = input("Enter a suitable, strong password for your export zip file: ")
                 break
-            elif response.lower() == 'n':
-                break
             else:
                 print("Invalid response. Please try again.")
     return password
 
 if 'password' in globals():  # If we have password saved.
     print("Hey, I have your previously used password, would you like to go ahead with the same or change it?:")  # In case of password already present (from 2nd run), we would ask user to continue or to change it.
-    user_inp = input("Type 'C' to change or 'N' to continue: ")    
-    password = ask_pass(user_inp)
+    user_inp = input("Type 'C' to change or 'N' to continue: ")
+    if user_inp.lower() == 'n':
+        pass
+    else:
+        password = ask_pass(user_inp)
 else:  # in case its the first time user is running the code, no pre-existing password defined.
     print("You need to setup a password for encrypting the export file.")
     password = ask_pass('c')
