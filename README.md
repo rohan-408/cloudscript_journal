@@ -329,6 +329,15 @@ File uploaded.
 ```
 
 On subsequent runs, the script will remember your **directory** and **password**, and your Google credentials will already be stored in `token.json` — so there will be no browser prompt.
+**Note**: If get a error Like:
+```
+'error_description': 'Token has been expired or revoked.'
+```
+Just delete the token.json file by using the following command:
+```
+rm token.json
+```
+
 
 ---
 
