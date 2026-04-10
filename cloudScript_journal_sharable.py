@@ -6,6 +6,7 @@ from pathlib import Path
 import pickle
 import pyzipper
 import os
+from prompt_toolkit import prompt
 
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
@@ -22,54 +23,6 @@ try:
     print("Hello {}!!. \nHope you're having a great day.".format(user_name.capitalize()))
 except:
     print("Hello there!!. \nHope you're having a great day.")
-
-# Asking user the date for which content needs to be added to diary.
-## Giving options such as Today, yesterday and a custom date.
-print("Please enter the date for which you want to add contents:\n1: for Today, 0 for Yesterday. Else, write a custom date of your choise in format: DD/MM or D/M. Add year if necessary")
-
-while True:
-    user_inp = input("Your input?: ")
-    if user_inp == '1':
-        input_date = datetime.date.today()
-        break
-    elif user_inp == '0':
-        input_date = datetime.date.today() - datetime.timedelta(days=1)
-        break
-    else:
-        try:  # before formatting the custom date user might have entered, checking its integrity.
-            if int(user_inp.split('/')[1]) >= 1 or int(user_inp.split('/')[1]) <= 12:  # Month entered should be between 1-12
-                if int(user_inp.split('/')[0]) >= 1 or int(user_inp.split('/')[0]) <= 31:  # Date entered should be between 1-31
-                    # Converting the input into datetime format
-                    try:  # checking if we have year entered by user
-                        if len(user_inp.split("/")[2]) <4: # Checking if length of year (as string) = 4
-                            print("Enter the year correctly")
-                        elif len(user_inp.split("/")[2]) == 4:
-                            input_date = datetime.datetime.strptime(user_inp,"%d/%m/%Y")
-                            break
-                    except:  # if we don't have year, taking the current year.
-                        input_date = datetime.datetime.strptime(user_inp+"/"+str(datetime.datetime.today().year),"%d/%m/%Y")
-                        break
-
-                else:
-                    print("Try again")
-            else:
-                print("Try again")
-        except:
-            print("Try again")
-
-## correctly formating the datetime interpreted to be pushed as filename
-input_date_formated = input_date.strftime("%Y-%m-%d")  # YYYY-MM-DD format for diary item's name
-
-# Taking content to be dumped into the diary file from user
-print("Start entering your inputs (if you want to end, simply type 'END'/ 'end' on a new line): ")
-content_list = []  # for storing multi line input
-while True:
-    line = input()
-    if line.lower() == 'end':
-        break
-    content_list.append(line)
-print("Got it!")
-content = "\n".join(content_list)  # Converting list to string.
 
 # Setting up the target directory in which we would dump these diary note files.
 ## For this, we would (by default) store it inside a folder named '{user_name}_diary_content' inside the system's Documents folder.
@@ -110,16 +63,70 @@ while True:
     except:
         print("Try again")
 
-
 # Creating that target directory, if not present. In target_dir selected, we add {user_name}_diary_content
 target_dir_actual = target_dir+"/"+user_name+"_diary_contents"  # this directory is the one in which we'll dump diary files
 target_dir_obj = Path(target_dir)
 target_dir_obj.parent.mkdir(parents=True, exist_ok=True)
 
-# Pushing the newly created file here.
-with open(target_dir_actual+'/'+input_date_formated, 'w', encoding='utf-8') as f1:
-    f1.write(content)
+# Asking user the date for which content needs to be added to diary.
+## Giving options such as Today, yesterday and a custom date.
+print("Please enter the date for which you want to add contents:\n'1': for Today, '0' for Yesterday or '2' to skip directly to cloud backup. Else, write a custom date of your choise in format: DD/MM or D/M. Add year if necessary")
 
+while True:
+    user_inp = input("Your input?: ")
+    if user_inp == '1':
+        input_date = datetime.date.today()
+        break
+    elif user_inp == '0':
+        input_date = datetime.date.today() - datetime.timedelta(days=1)
+        break
+    elif user_inp == '2':
+        break
+    else:
+        try:  # before formatting the custom date user might have entered, checking its integrity.
+            if int(user_inp.split('/')[1]) >= 1 or int(user_inp.split('/')[1]) <= 12:  # Month entered should be between 1-12
+                if int(user_inp.split('/')[0]) >= 1 or int(user_inp.split('/')[0]) <= 31:  # Date entered should be between 1-31
+                    # Converting the input into datetime format
+                    try:  # checking if we have year entered by user
+                        if len(user_inp.split("/")[2]) <4: # Checking if length of year (as string) = 4
+                            print("Enter the year correctly")
+                        elif len(user_inp.split("/")[2]) == 4:
+                            input_date = datetime.datetime.strptime(user_inp,"%d/%m/%Y")
+                            break
+                    except:  # if we don't have year, taking the current year.
+                        input_date = datetime.datetime.strptime(user_inp+"/"+str(datetime.datetime.today().year),"%d/%m/%Y")
+                        break
+
+                else:
+                    print("Try again")
+            else:
+                print("Try again")
+        except:
+            print("Try again")
+
+## correctly formating the datetime interpreted to be pushed as filename (if user chooses the date correctly)
+if user_inp != '2':
+    input_date_formated = input_date.strftime("%Y-%m-%d")  # YYYY-MM-DD format for diary item's name
+    
+    # Finding if this file already exists in our directory or not
+    current_file = Path(target_dir_actual)/input_date_formated
+    if current_file.is_file():
+        # If it exists, we would edit it from there.
+        with open(current_file, 'r') as f1:
+            current_content = f1.read()  # Taking in all the pre-existing content from the file
+        print("This file exists. Re-editing it")
+        print("Press Meta+Enter or Esc+Enter to finish")
+        content = prompt('>> ', multiline=True, default=current_content)
+        print("Recorded!")
+        
+    else:  # In case we have a new file
+        print("Start entering your inputs (Press Meta+Enter or Esc+Enter to finish): ")
+        content = prompt('>> ', multiline=True)
+        print("Recorded!")
+    
+    # Pushing the newly created file to the directory.
+    with open(target_dir_actual+'/'+input_date_formated, 'w', encoding='utf-8') as f2:
+        f2.write(content)
 
 # Now creating a .zip protected file to be pushed to Google drive
 ## Checking if we already have password from previous saved pickle.
@@ -170,23 +177,24 @@ with pyzipper.AESZipFile(Path(target_dir)/zip_file_name, 'w',compression=pyzippe
 scopes = ['https://www.googleapis.com/auth/drive.file']
 file_name = zip_file_name
 file_path = target_dir+'/'+zip_file_name
-gdrive_folder_id = 'google drive folder_id'  # change this with your target folder id of your google drive. 
+gdrive_folder_id = 'your_google-drive_folder_id'  # change this with your target folder id of your google drive. 
 ## (from the newly created folder URL, folder id is the thing after /folders/)
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 def get_service():
     creds = None
-    token_path = os.path.join(base_dir, 'token.json')
-    creds_path = os.path.join(base_dir, 'credentials.json')
-
-    if os.path.exists(token_path):
-        creds = Credentials.from_authorized_user_file(token_path, scopes)
+    if os.path.exists('token.json'):
+        creds = Credentials.from_authorized_user_file('token.json', scopes)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
+            try:
+                creds.refresh(Request())
+            except Exception:
+                os.remove('token.json')  # Delete bad token
+                creds = InstalledAppFlow.from_client_secrets_file('credentials.json', scopes).run_local_server(port=0)
         else:
-            creds = InstalledAppFlow.from_client_secrets_file(creds_path, scopes).run_local_server(port=0)
-        with open(token_path, 'w') as f:
+            creds = InstalledAppFlow.from_client_secrets_file('credentials.json', scopes).run_local_server(port=0)
+        with open('token.json', 'w') as f:
             f.write(creds.to_json())
     return build('drive', 'v3', credentials=creds)
 
@@ -217,7 +225,8 @@ while True:
         print("Got it!\n have a great day ahead!")
         break
     elif c_backup.lower() == 'n':
-        print("Got it!\nhave a great day ahead!")
+        print("Got it!")
+        print("have a great day ahead!")
         break
     else:
         print("Invalid response, Please try again..")
