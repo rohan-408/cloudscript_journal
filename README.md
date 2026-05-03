@@ -111,7 +111,7 @@ source diary_env/bin/activate
 
 **Step 5: Install the required packages**
 ```bash
-pip install pyzipper google-api-python-client google-auth-oauthlib google-auth-httplib2
+pip install pyzipper google-api-python-client google-auth-oauthlib google-auth-httplib2 prompt_toolkit
 ```
 
 ---
@@ -137,7 +137,7 @@ source diary_env/bin/activate
 
 **Step 4: Install the required packages**
 ```bash
-pip install pyzipper google-api-python-client google-auth-oauthlib google-auth-httplib2
+pip install pyzipper google-api-python-client google-auth-oauthlib google-auth-httplib2 prompt_toolkit
 ```
 
 ---
@@ -175,7 +175,7 @@ diary_env\Scripts\Activate.ps1
 
 **Step 4: Install the required packages**
 ```cmd
-pip install pyzipper google-api-python-client google-auth-oauthlib google-auth-httplib2
+pip install pyzipper google-api-python-client google-auth-oauthlib google-auth-httplib2 prompt_toolkit
 ```
 
 ---
