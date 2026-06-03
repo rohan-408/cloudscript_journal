@@ -44,24 +44,27 @@ except:  # in case, we don't have this pickle file (1st run)
 
 print("Using the directory: '{}'.".format(target_dir)+" I would save the directory: {}_diary_contents in this.".format(user_name))
 print("Would I proceed with this?")
-user_input = input("Y/n: ") 
-while True:
-    try:
-        if user_input.lower() == 'n':
-            user_inp_dir = input("Enter the new directory (I would save yourname_diary_contents here): ")
-            dir_obj = Path(user_inp_dir)
-            if dir_obj.is_dir():  # Checking if the entered directory actually exists. if yes, we would save it for next consecutive runs 
-                target_dir = dir_obj
-                break
+
+def ask_dir():
+    while True:
+        user_input = input("Y/n: ") 
+        if str(user_input.lower()) in ['y','n']:
+            if user_input.lower() == 'n':
+                user_inp_dir = input("Enter the new directory (I would save yourname_diary_contents here): ")
+                dir_obj = Path(user_inp_dir)
+                if dir_obj.is_dir():  # Checking if the entered directory actually exists. if yes, we would save it for next consecutive runs 
+                    target_dir = dir_obj
+                    break
+                else:
+                    print("Enter a valid directory")
             else:
-                print("Enter a valid directory")
-        elif user_input.lower() == 'y':
-            print("Ok!")
-            break
+                print("Ok!")
+                break               
+        
         else:
             print("Enter either y/n")
-    except:
-        print("Try again")
+
+ask_dir()
 
 # Creating that target directory, if not present. In target_dir selected, we add {user_name}_diary_content
 target_dir_actual = target_dir+"/"+user_name+"_diary_contents"  # this directory is the one in which we'll dump diary files
@@ -118,7 +121,7 @@ if user_inp != '2':
         print("Press Meta+Enter or Esc+Enter to finish")
         content = prompt('>> ', multiline=True, default=current_content)
         print("Recorded!")
-        
+# If everything's good, we would proceed with taking input for diary record        
     else:  # In case we have a new file
         print("Start entering your inputs (Press Meta+Enter or Esc+Enter to finish): ")
         content = prompt('>> ', multiline=True)
@@ -173,12 +176,14 @@ with pyzipper.AESZipFile(Path(target_dir)/zip_file_name, 'w',compression=pyzippe
             zf.write(file_path, arcname)
 
 # Connecting to Google drive
-## Please replace the following variables with your own values.
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path='cloud_script_config.env')
+gdrive_folder_id = os.getenv('gdrive_folder_id')
+
 scopes = ['https://www.googleapis.com/auth/drive.file']
 file_name = zip_file_name
 file_path = target_dir+'/'+zip_file_name
-gdrive_folder_id = 'your_google-drive_folder_id'  # change this with your target folder id of your google drive. 
-## (from the newly created folder URL, folder id is the thing after /folders/)
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 def get_service():
